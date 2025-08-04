@@ -1,5 +1,9 @@
 {
+	"name": "diciobot",
+	"version": "1.0.0",
+	"main": "index.js",
 	"type": "module",
+	"author": "jeff venancius",
   "dependencies": {
     "@atproto/api": "^0.15.27",
     "axios": "^1.11.0",
@@ -7,6 +11,6 @@
     "cron": "^4.3.2",
     "dotenv": "^17.2.0",
     "node-html-parser": "^7.0.1",
-    "node-wget": "^0.4.3",
+    "node-wget": "^0.4.3"
   }
 }

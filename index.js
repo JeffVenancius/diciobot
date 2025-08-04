@@ -6,6 +6,8 @@ import * as process from 'process';
 import axios from 'axios'
 import { parse } from 'node-html-parser';
 
+import { readFile, writeFile } from 'fs/promises';
+
 const links = [
 	"/nao/",
 	"/paz/",
@@ -3654,11 +3656,39 @@ const agent = new BskyAgent({
 
 async function main() {
 	try {
-		const response = await axios.get('https://www.dicio.com.br' + links[Math.floor(Math.random() * links.length)])
+		let json = JSON.parse(
+			await readFile(
+				new URL('./numbers.json', import.meta.url)
+			)
+		);
+		let luck = Math.floor(Math.random() * links.length)
+		let counter = 0
+		while (json.includes(luck)) {
+			counter += 1
+			luck = Math.floor(Math.random() * links.length)
+			if (json.length >= links.length) {
+				json = []
+			}
+			if (counter > 500 ) {
+				luck = 0
+				while (json.includes(luck)) {
+					luck += 1
+				}
+			}
+		}
+
+		json.push(luck)
+
+		await writeFile("./numbers.json", JSON.stringify(json))
+
+		const response = await axios.get('https://www.dicio.com.br' + links[luck])
 		const data = parse(response.data)
 		const title = data.querySelector('.title-header h1').text.toLowerCase()
 		const texts = data.querySelectorAll('.significado span')
-		let full = title.match(/[a-z].*[a-z]/)[0].replace(/\b\w/g, s => s.toUpperCase());
+		let full = title.split(" ").map(e => {
+			if (e.length) return e[0].toUpperCase() + e.substring(1)
+			return ''
+		}).join(' ').match(/[A-Z].*[^\s]/g)[0]
 
 		texts.forEach(i => {
 			let textArr = i.text.split('')
@@ -3675,7 +3705,7 @@ async function main() {
 		await agent.post({
 			text: full
 		});
-		console.log("Just posted!")
+		console.log("Just posted! " + full)
 	} catch {
 		return
 	}
@@ -3685,7 +3715,7 @@ main();
 
 
 // Run this on a cron job
-const scheduleExpression = '*/15 * * * *'; // Run once every three hours in prod
+const scheduleExpression = '*/5 * * * *'; // Run once every three hours in prod
 
 const job = new CronJob(scheduleExpression, () => main(getword())); // change to scheduleExpressionMinute for testing
 
