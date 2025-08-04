@@ -3655,6 +3655,7 @@ const agent = new BskyAgent({
 })
 
 async function main() {
+	if (new Date().getHours() < 6) return
 	try {
 		let json = JSON.parse(
 			await readFile(
@@ -3715,8 +3716,9 @@ main();
 
 
 // Run this on a cron job
-const scheduleExpression = '*/5 * * * *'; // Run once every three hours in prod
+const scheduleExpression = '*/5 * * * *'; // Run once every five minutes
 
 const job = new CronJob(scheduleExpression, () => main(getword())); // change to scheduleExpressionMinute for testing
 
 job.start();
+
